@@ -85,7 +85,69 @@
             </NButton>
           </div>
         </div>
+
+        <!-- 已有文件选择器 -->
+        <div class="file-selector" v-if="availableFiles.length > 0">
+          <div class="selector-label">
+            <NIcon :component="FolderOpenOutline" :size="18" />
+            <span>或从已有文件中选择：</span>
+          </div>
+          <NSelect
+            v-model:value="selectedFile"
+            :options="fileOptions"
+            placeholder="选择 Excel 文件"
+            clearable
+            @update:value="handleLoadExcel"
+            :loading="loadingExcel"
+          />
+          <div class="file-actions" v-if="selectedFile">
+            <NButton
+              size="small"
+              type="warning"
+              ghost
+              @click="handleRenameFile"
+              :disabled="loadingExcel"
+            >
+              <template #icon>
+                <NIcon :component="CreateOutline" />
+              </template>
+              重命名
+            </NButton>
+            <NButton
+              size="small"
+              type="error"
+              ghost
+              @click="handleDeleteFile"
+              :disabled="loadingExcel"
+            >
+              <template #icon>
+                <NIcon :component="TrashOutline" />
+              </template>
+              删除
+            </NButton>
+          </div>
+        </div>
+
+        <!-- 上传到 public 目录 -->
+        <div class="upload-to-public">
+          <NUpload
+            accept=".xlsx,.xls"
+            :max="1"
+            :show-file-list="false"
+            :custom-request="handleUploadToPublic"
+            :disabled="uploadingToPublic"
+          >
+            <NButton type="primary" ghost :loading="uploadingToPublic">
+              <template #icon>
+                <NIcon :component="SaveOutline" />
+              </template>
+              上传文件到服务器
+            </NButton>
+          </NUpload>
+          <span class="upload-hint">文件将保存到 public 目录，可重复使用</span>
+        </div>
         
+        <NDivider>或</NDivider>
         <NUpload
           accept=".xlsx,.xls"
           :max="1"
@@ -296,9 +358,10 @@
 </template>
 
 <script setup lang="ts">
-import { useMessage, useDialog, NIcon } from 'naive-ui'
+import { useMessage, useDialog, NIcon, NInput } from 'naive-ui'
 import type { UploadCustomRequestOptions } from 'naive-ui'
 import VChart from 'vue-echarts'
+import { h } from 'vue'
 import { 
   BarChartOutline,
   DocumentTextOutline,
@@ -307,7 +370,11 @@ import {
   PeopleOutline,
   BusinessOutline,
   StatsChartOutline,
-  DocumentOutline
+  DocumentOutline,
+  FolderOpenOutline,
+  CreateOutline,
+  TrashOutline,
+  SaveOutline
 } from '@vicons/ionicons5'
 
 // 在 Provider 内部可以安全使用
@@ -319,6 +386,172 @@ const { data, loading, uploading, error, statistics, metadata, loadData, uploadF
 
 // 刷新统计状态
 const refreshingStats = ref(false)
+
+// 已有文件列表
+const availableFiles = ref<Array<{ name: string; path: string }>>([])
+const selectedFile = ref<string | null>(null)
+const loadingExcel = ref(false)
+const uploadingToPublic = ref(false)
+
+// 文件选项
+const fileOptions = computed(() => 
+  availableFiles.value.map(file => ({
+    label: file.name,
+    value: file.name
+  }))
+)
+
+// 加载已有文件列表
+async function loadAvailableFiles() {
+  try {
+    const result = await $fetch('/api/excel-files') as any
+    if (result.success) {
+      availableFiles.value = result.files || []
+    }
+  } catch (error) {
+    console.error('加载文件列表失败:', error)
+  }
+}
+
+// 加载选中的 Excel 文件
+async function handleLoadExcel(filename: string | null) {
+  if (!filename) return
+  
+  loadingExcel.value = true
+  
+  try {
+    const result = await $fetch('/api/load-excel', {
+      method: 'POST',
+      body: { filename, useCache: true }
+    }) as any
+    
+    if (result.success) {
+      const cacheMsg = result.fromCache ? '（使用缓存）' : ''
+      message.success(result.message + cacheMsg)
+      await loadData()
+    } else {
+      message.error('加载文件失败')
+    }
+  } catch (error: any) {
+    console.error('加载文件失败:', error)
+    message.error(error.data?.message || '加载文件失败，请稍后重试')
+  } finally {
+    loadingExcel.value = false
+  }
+}
+
+// 上传文件到 public 目录
+async function handleUploadToPublic({ file }: UploadCustomRequestOptions) {
+  if (!file.file) {
+    message.error('未找到文件')
+    return
+  }
+  
+  uploadingToPublic.value = true
+  
+  try {
+    const formData = new FormData()
+    formData.append('file', file.file)
+
+    const result = await $fetch('/api/upload-to-public', {
+      method: 'POST',
+      body: formData
+    }) as any
+    
+    if (result.success) {
+      message.success(result.message)
+      await loadAvailableFiles()
+      selectedFile.value = result.filename
+    } else {
+      message.error('上传失败')
+    }
+  } catch (error: any) {
+    console.error('上传失败:', error)
+    message.error(error.data?.message || '上传文件失败，请稍后重试')
+  } finally {
+    uploadingToPublic.value = false
+  }
+}
+
+// 重命名文件
+async function handleRenameFile() {
+  if (!selectedFile.value) return
+  
+  dialog.create({
+    title: '重命名文件',
+    content: () => {
+      const inputRef = ref(selectedFile.value)
+      return h('div', { style: 'padding: 10px 0;' }, [
+        h(NInput, {
+          value: inputRef.value,
+          'onUpdate:value': (v: string) => { inputRef.value = v },
+          placeholder: '输入新文件名'
+        })
+      ])
+    },
+    positiveText: '确定',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      const input = document.querySelector('.n-dialog input') as HTMLInputElement
+      const newFilename = input?.value
+      
+      if (!newFilename || newFilename === selectedFile.value) {
+        message.warning('文件名未改变')
+        return
+      }
+      
+      try {
+        const result = await $fetch('/api/manage-file', {
+          method: 'POST',
+          body: {
+            action: 'rename',
+            filename: selectedFile.value,
+            newFilename
+          }
+        }) as any
+        
+        if (result.success) {
+          message.success(result.message)
+          await loadAvailableFiles()
+          selectedFile.value = result.newFilename
+        }
+      } catch (error: any) {
+        message.error(error.data?.message || '重命名失败')
+      }
+    }
+  })
+}
+
+// 删除文件
+async function handleDeleteFile() {
+  if (!selectedFile.value) return
+  
+  dialog.warning({
+    title: '确认删除',
+    content: `确定要删除文件 "${selectedFile.value}" 吗？此操作不可恢复。`,
+    positiveText: '确定',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      try {
+        const result = await $fetch('/api/manage-file', {
+          method: 'POST',
+          body: {
+            action: 'delete',
+            filename: selectedFile.value
+          }
+        }) as any
+        
+        if (result.success) {
+          message.success(result.message)
+          selectedFile.value = null
+          await loadAvailableFiles()
+        }
+      } catch (error: any) {
+        message.error(error.data?.message || '删除失败')
+      }
+    }
+  })
+}
 
 // 处理文件上传
 async function handleUpload({ file }: UploadCustomRequestOptions) {
@@ -615,6 +848,7 @@ const freshGradChartOption = computed(() => ({
 // 组件挂载时加载数据
 onMounted(() => {
   loadData()
+  loadAvailableFiles()
 })
 </script>
 
@@ -764,6 +998,54 @@ onMounted(() => {
 .filter-section,
 .charts-section {
   margin-bottom: 2rem;
+}
+
+.file-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.selector-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.file-selector :deep(.n-select) {
+  flex: 1;
+  min-width: 200px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.upload-to-public {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.upload-hint {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
 }
 
 .stats-grid {
