@@ -7,7 +7,14 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "start": "node .output/server/index.mjs",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop jobs-viz",
+    "pm2:restart": "pm2 restart jobs-viz",
+    "pm2:delete": "pm2 delete jobs-viz",
+    "pm2:logs": "pm2 logs jobs-viz",
+    "pm2:monit": "pm2 monit"
   },
   "dependencies": {
     "@bg-dev/nuxt-naiveui": "^2.0.0",
@@ -20,5 +27,8 @@
     "vue-echarts": "^8.0.1",
     "vue-router": "^4.6.4",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "pm2": "^5.3.0"
   }
 }
