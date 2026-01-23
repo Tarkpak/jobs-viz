@@ -1,0 +1,87 @@
+curl 'http://gzrsks.oumakspt.com:62/tyzpwb/stuchooseexam/getPositionInfo.htm' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en,zh-CN;q=0.9,zh;q=0.8,en-US;q=0.7,ar;q=0.6' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -b 'JSESSIONID=9271C730A8474DBAA737D4105AC69F40; JSESSIONID=851124EEBDB22259A6BC1EC6B6713C27; SERVERID=02d71b149b7bf3a27476b5821c0f5bfd|1769133258|1769133224' \
+  -H 'Origin: http://gzrsks.oumakspt.com:62' \
+  -H 'Proxy-Connection: keep-alive' \
+  -H 'Referer: http://gzrsks.oumakspt.com:62/tyzpwb/stuchooseexam/selectPosition.htm?examstupid=1015&userid=88cfd66eded23156&bmid=fe3823083ac46842&examid=796a0fa25f7c9ffb&aa=1769133234178' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  --data-raw 'zwdm=01013301&examid=796a0fa25f7c9ffb' \
+  --insecure
+
+{
+    "id": 8737,
+    "zpdwdm": "15201133",
+    "zwdm": "01013301",
+    "zwmc": "一级主任科员及以下工作人员",
+    "sbdm": "152",
+    "sbmc": "贵州省",
+    "dsdm": "15201",
+    "dsmc": "贵州省贵阳市",
+    "zpdwmc": "观山湖区大数据发展管理局",
+    "zwdl": "1",
+    "zwxl": "102",
+    "zprs": 1,
+    "sfbz": 100,
+    "syzt": "1",
+    "sfmf": "0",
+    "shfs": "2",
+    "shzt": "1",
+    "sh_reason": null,
+    "kqtjbz": null,
+    "khtjbz": null,
+    "kkbl": 3,
+    "msbl": 3,
+    "ssqxdm": null,
+    "ssxzdm": null,
+    "ssqxmc": null,
+    "ssxzmc": null,
+    "zpdwdm1": "15201133",
+    "zpdwdm2": null,
+    "zpdwdm3": null,
+    "zpdwmc1": "观山湖区大数据发展管理局",
+    "zpdwmc2": null,
+    "zpdwmc3": null,
+    "tsksyq": null,
+    "lrlev": null,
+    "sbzt": null,
+    "jfrs": null,
+    "cjlx": null,
+    "dwssds": null,
+    "dwssqx": null,
+    "jgxz": "3",
+    "dwdz": "贵州省贵阳市观山湖区宾阳街道石林西路171号",
+    "zwjj": "从事办公室日常工作",
+    "xlyq": "2",
+    "xwyq": "2",
+    "dzyq": "无限制",
+    "bkyq": "0809计算机类;0807电子信息类",
+    "yjsyq": "0812计算机科学与技术;0854电子信息",
+    "zzmmyq": "00",
+    "fyjcxmry": "0",
+    "yxcsqgbu": "0",
+    "zcdysj": "0",
+    "yjbys": "1",
+    "bktysb": "0",
+    "gzyq": "1",
+    "qttj": "学历学位为同一专业",
+    "qtsmx": "无",
+    "mzyq": "否",
+    "syztc": "是",
+    "sfmfc": "否",
+    "shfsc": "人工审核",
+    "jgxzc": "行政机关",
+    "xlyqc": "本科及以上",
+    "xwyqc": "学士及以上",
+    "zzmmyqc": "无限制",
+    "fyjcxmryc": "否",
+    "yxcsqgbuc": "否",
+    "zcdysjc": "否",
+    "yjbysc": "是",
+    "bktysbc": "否",
+    "gzyqc": "无限制",
+    "bkrs": 175,
+    "jzsj": "01-22 19"
+}

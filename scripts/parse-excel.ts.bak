@@ -1,0 +1,90 @@
+import * as XLSX from 'xlsx'
+import { writeFileSync, mkdirSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+// Excel 文件路径 - 文件在上一级目录的父目录
+const excelFile = 'c:/Users/yangsheng/Desktop/gongkao/附件3：贵州省2026年度省、市、县、乡四级机关统一面向社会公开招录人民警察职位表.xlsx'
+
+// 读取 Excel
+const workbook = XLSX.readFile(excelFile)
+const sheet = workbook.Sheets[workbook.SheetNames[0]]
+const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as any[][]
+
+// 跳过标题行（前4行），从第5行开始是数据
+const dataRows = rawData.slice(4)
+
+// 解析数据
+const positions = dataRows
+    .filter(row => row[0] && typeof row[0] === 'number') // 确保有序号
+    .map(row => ({
+        序号: Number(row[0]),
+        考区: String(row[1] || ''),
+        单位名称: String(row[2] || ''),
+        机构性质: String(row[3] || ''),
+        单位地址: String(row[4] || ''),
+        单位咨询电话: String(row[5] || ''),
+        职位代码: String(row[6] || ''),
+        职位名称: String(row[7] || ''),
+        所属大类: String(row[8] || ''),
+        所属小类: String(row[9] || ''),
+        职位简介: String(row[10] || ''),
+        招录人数: Number(row[11]) || 1,
+        学历要求: String(row[12] || ''),
+        学位要求: String(row[13] || ''),
+        专业要求_大专: String(row[14] || ''),
+        专业要求_本科: String(row[15] || ''),
+        专业要求_研究生: String(row[16] || ''),
+        政治面貌要求: String(row[17] || '无限制'),
+        定向_服务基层项目人员: String(row[18] || '否'),
+        定向_优秀村干部: String(row[19] || '否'),
+        定向_驻村第一书记: String(row[20] || '否'),
+        定向_少数民族: String(row[21] || '否'),
+        定向_2026届毕业生: String(row[22] || '否'),
+        定向_退役军人: String(row[23] || '否'),
+        基层工作经历时间: String(row[24] || '无限制'),
+        其他报考条件: String(row[25] || '无'),
+        职位工作性质及说明: String(row[26] || '')
+    }))
+
+console.log(`成功解析 ${positions.length} 条职位数据`)
+
+// 确保输出目录存在
+const outputDir = join(__dirname, 'public', 'data')
+mkdirSync(outputDir, { recursive: true })
+
+// 写入 JSON 文件
+const outputFile = join(outputDir, 'police-positions.json')
+writeFileSync(outputFile, JSON.stringify(positions, null, 2), 'utf-8')
+console.log(`数据已保存到 ${outputFile}`)
+
+// 打印一些统计信息
+console.log('\n=== 数据统计 ===')
+console.log(`总职位数: ${positions.length}`)
+console.log(`总招录人数: ${positions.reduce((sum, p) => sum + p.招录人数, 0)}`)
+
+// 考区统计
+const areaStats = new Map<string, number>()
+positions.forEach(p => {
+    areaStats.set(p.考区, (areaStats.get(p.考区) || 0) + 1)
+})
+console.log('\n考区分布:')
+Array.from(areaStats.entries())
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([area, count]) => {
+        console.log(`  ${area}: ${count} 个职位`)
+    })
+
+// 学历统计
+const eduStats = new Map<string, number>()
+positions.forEach(p => {
+    eduStats.set(p.学历要求, (eduStats.get(p.学历要求) || 0) + 1)
+})
+console.log('\n学历要求分布:')
+Array.from(eduStats.entries())
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([edu, count]) => {
+        console.log(`  ${edu}: ${count} 个职位`)
+    })
