@@ -24,6 +24,10 @@
             <NIcon :component="DocumentTextOutline" :size="18" />
             <span>职位列表</span>
           </NuxtLink>
+          <NuxtLink to="/query" class="nav-tab">
+            <NIcon :component="SearchOutline" :size="18" />
+            <span>职位查询</span>
+          </NuxtLink>
         </div>
 
         <div class="header-stats">
@@ -389,7 +393,8 @@ import {
   FolderOpenOutline,
   CreateOutline,
   TrashOutline,
-  SaveOutline
+  SaveOutline,
+  SearchOutline
 } from '@vicons/ionicons5'
 
 // 在 Provider 内部可以安全使用

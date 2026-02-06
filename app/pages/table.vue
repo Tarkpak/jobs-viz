@@ -24,6 +24,10 @@
             <NIcon :component="DocumentTextOutline" :size="18" />
             <span>职位列表</span>
           </NuxtLink>
+          <NuxtLink to="/query" class="nav-tab">
+            <NIcon :component="SearchOutline" :size="18" />
+            <span>职位查询</span>
+          </NuxtLink>
         </div>
 
         <div class="header-stats">
@@ -293,7 +297,8 @@ import {
   DocumentTextOutline,
   DownloadOutline,
   GridOutline,
-  BarChartOutline
+  BarChartOutline,
+  SearchOutline
 } from '@vicons/ionicons5'
 
 const message = useMessage()
@@ -751,7 +756,24 @@ const tableColumns = computed<DataTableColumns<PositionData>>(() => [
   {
     title: '职位代码',
     key: '职位代码',
-    width: 100,
+    width: 150,
+    render(row) {
+      return h('div', { style: 'display: flex; align-items: center; gap: 0.5rem;' }, [
+        h('span', row.职位代码),
+        h(NButton, {
+          size: 'tiny',
+          type: 'primary',
+          ghost: true,
+          onClick: () => {
+            // 跳转到查询页面并填充职位代码
+            navigateTo(`/query?code=${row.职位代码}`)
+          }
+        }, {
+          default: () => '查询',
+          icon: () => h(NIcon, { component: SearchOutline, size: 14 })
+        })
+      ])
+    },
     sorter: 'default'
   },
   {
