@@ -1,16 +1,46 @@
+import { readdir } from 'fs/promises'
+import { join } from 'path'
+
 export default defineEventHandler(async (event) => {
     try {
-        // 使用 useStorage 读取 public 目录
-        const publicStorage = useStorage('assets:public')
-        const keys = await publicStorage.getKeys()
+        // 获取 public 目录的绝对路径
+        const publicDir = join(process.cwd(), 'public')
         
-        // 筛选出 Excel 文件
-        const excelFiles = keys
-            .filter(key => key.endsWith('.xlsx') || key.endsWith('.xls'))
-            .map(key => ({
-                name: key,
-                path: `/${key}`
-            }))
+        // 递归读取目录中的所有文件
+        async function getExcelFiles(dir: string, baseDir: string = dir): Promise<Array<{ name: string; fullPath: string; path: string }>> {
+            const files: Array<{ name: string; fullPath: string; path: string }> = []
+            
+            try {
+                const entries = await readdir(dir, { withFileTypes: true })
+                
+                for (const entry of entries) {
+                    const fullPath = join(dir, entry.name)
+                    
+                    if (entry.isDirectory()) {
+                        // 递归读取子目录
+                        const subFiles = await getExcelFiles(fullPath, baseDir)
+                        files.push(...subFiles)
+                    } else if (entry.isFile() && (entry.name.endsWith('.xlsx') || entry.name.endsWith('.xls'))) {
+                        // 计算相对路径
+                        const relativePath = fullPath.replace(baseDir, '').replace(/\\/g, '/')
+                        files.push({
+                            name: entry.name,
+                            fullPath: relativePath.startsWith('/') ? relativePath.slice(1) : relativePath,
+                            path: relativePath
+                        })
+                    }
+                }
+            } catch (error) {
+                console.error(`读取目录失败: ${dir}`, error)
+            }
+            
+            return files
+        }
+        
+        const excelFiles = await getExcelFiles(publicDir)
+        
+        // 按文件名排序
+        excelFiles.sort((a, b) => a.name.localeCompare(b.name))
         
         return {
             success: true,

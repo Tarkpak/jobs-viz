@@ -229,11 +229,17 @@ export default defineEventHandler(async (event) => {
             }
         }
 
-        // 使用 useStorage 读取 public 目录下的文件
-        const publicStorage = useStorage('assets:public')
-        const fileBuffer = await publicStorage.getItemRaw(filename)
-
-        if (!fileBuffer) {
+        // 直接从文件系统读取 public 目录下的文件
+        const { readFile } = await import('fs/promises')
+        const { join } = await import('path')
+        
+        const publicDir = join(process.cwd(), 'public')
+        const filePath = join(publicDir, filename)
+        
+        let fileBuffer: Buffer
+        try {
+            fileBuffer = await readFile(filePath)
+        } catch (error) {
             throw createError({
                 statusCode: 404,
                 message: '文件不存在'

@@ -1,3 +1,6 @@
+import { writeFile } from 'fs/promises'
+import { join } from 'path'
+
 export default defineEventHandler(async (event) => {
     try {
         const formData = await readMultipartFormData(event)
@@ -26,9 +29,11 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        // 使用 useStorage 保存文件到 public 目录
-        const publicStorage = useStorage('assets:public')
-        await publicStorage.setItemRaw(filename, file.data)
+        // 直接保存文件到 public 目录
+        const publicDir = join(process.cwd(), 'public')
+        const filePath = join(publicDir, filename)
+        
+        await writeFile(filePath, file.data)
 
         console.log(`文件已保存: ${filename}`)
 

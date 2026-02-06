@@ -391,7 +391,7 @@ const { data, loading, uploading, error, statistics, metadata, loadData, uploadF
 const refreshingStats = ref(false)
 
 // 已有文件列表
-const availableFiles = ref<Array<{ name: string; path: string }>>([])
+const availableFiles = ref<Array<{ name: string; fullPath?: string; path: string }>>([])
 const selectedFile = ref<string | null>(null)
 const loadingExcel = ref(false)
 const uploadingToPublic = ref(false)
@@ -400,7 +400,7 @@ const uploadingToPublic = ref(false)
 const fileOptions = computed(() => 
   availableFiles.value.map(file => ({
     label: file.name,
-    value: file.name
+    value: file.fullPath || file.name // 使用完整路径作为值
   }))
 )
 
@@ -464,7 +464,9 @@ async function handleUploadToPublic({ file }: UploadCustomRequestOptions) {
     if (result.success) {
       message.success(result.message)
       await loadAvailableFiles()
-      selectedFile.value = result.filename
+      // 上传后自动选中该文件
+      const uploadedFile = availableFiles.value.find(f => f.name === result.filename)
+      selectedFile.value = uploadedFile?.fullPath || result.filename
     } else {
       message.error('上传失败')
     }
