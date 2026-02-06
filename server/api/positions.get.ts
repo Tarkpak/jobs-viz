@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
                 uploadTime: data.uploadTime || '',
                 count: positions.length,
                 source: 'uploaded',
+                examType: data.examType,
                 statsUpdateTime: data.statsUpdateTime,
                 statsSuccessCount: data.statsSuccessCount
             }

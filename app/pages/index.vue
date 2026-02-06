@@ -50,6 +50,9 @@
               <NTag :type="metadata.source === 'uploaded' ? 'success' : 'warning'" size="small">
                 {{ metadata.source === 'uploaded' ? '已上传数据' : '暂无数据' }}
               </NTag>
+              <NTag v-if="metadata.examType" :type="metadata.examType === 'gwy' ? 'info' : 'success'" size="small">
+                {{ metadata.examType === 'gwy' ? '公务员' : '事业单位' }}
+              </NTag>
               <span class="filename" v-if="metadata.filename">{{ metadata.filename }}</span>
               <span class="upload-time" v-if="metadata.uploadTime">
                 上传于: {{ new Date(metadata.uploadTime).toLocaleString('zh-CN') }}

@@ -28,6 +28,7 @@ export interface PositionData {
     基层工作经历时间: string
     其他报考条件: string
     职位工作性质及说明: string
+    考试类型: 'gwy' | 'sydw' // 新增：考试类型
     // 报名统计字段
     报考人数?: number
     竞争比例?: number
@@ -39,6 +40,7 @@ export interface DataMetadata {
     uploadTime: string
     count: number
     source: 'none' | 'uploaded'
+    examType?: 'gwy' | 'sydw' // 新增：考试类型
     statsUpdateTime?: string
     statsSuccessCount?: number
 }
