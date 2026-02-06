@@ -123,7 +123,32 @@
             </NButton>
           </div>
           
+          <!-- 职位代码筛选 -->
+          <div class="position-code-filter">
+            <span class="filter-label">职位代码：</span>
+            <NInput 
+              v-model:value="filters.positionCode" 
+              placeholder="输入职位代码进行筛选（支持模糊匹配）"
+              clearable
+              style="flex: 1; max-width: 400px;"
+            >
+              <template #prefix>
+                <span style="opacity: 0.5">🔢</span>
+              </template>
+            </NInput>
+          </div>
+          
           <div v-if="hasActiveFilters" class="filter-tags">
+            <div v-if="filters.positionCode" class="filter-tag-group">
+              <span class="filter-label">职位代码：</span>
+              <NTag 
+                type="info" 
+                closable 
+                @close="filters.positionCode = ''"
+              >
+                {{ filters.positionCode }}
+              </NTag>
+            </div>
             <div v-if="filters.area.length > 0" class="filter-tag-group">
               <span class="filter-label">考区：</span>
               <NTag 
@@ -285,6 +310,7 @@ const filters = reactive({
   political: [] as string[],
   freshGrad: [] as string[],
   major: [] as string[], // 专业要求筛选
+  positionCode: '', // 职位代码筛选
   keyword: ''
 })
 
@@ -401,6 +427,10 @@ const filteredData = computed(() => {
     })
     console.log('专业筛选后的结果数量:', result.length)
   }
+  if (filters.positionCode) {
+    const code = filters.positionCode.trim()
+    result = result.filter(item => item.职位代码.includes(code))
+  }
   if (filters.keyword) {
     const kw = filters.keyword.toLowerCase()
     result = result.filter(item => {
@@ -450,6 +480,7 @@ function resetFilters() {
   filters.political = []
   filters.freshGrad = []
   filters.major = []
+  filters.positionCode = ''
   filters.keyword = ''
   tableFilters.value = {}
 }
@@ -472,7 +503,8 @@ const hasActiveFilters = computed(() => {
     filters.unitType.length > 0 ||
     filters.political.length > 0 ||
     filters.freshGrad.length > 0 ||
-    filters.major.length > 0
+    filters.major.length > 0 ||
+    filters.positionCode.trim() !== ''
 })
 
 // 预设筛选条件
@@ -1160,13 +1192,29 @@ onMounted(async () => {
   padding: 1rem;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .preset-label {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
+}
+
+.position-code-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.position-code-filter .filter-label {
+  white-space: nowrap;
+  min-width: auto;
 }
 
 .filter-tags {

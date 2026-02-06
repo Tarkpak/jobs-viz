@@ -224,12 +224,14 @@ export function usePoliceData() {
         考区?: string
         学历要求?: string
         所属大类?: string
+        职位代码?: string
         keyword?: string
     }): PositionData[] {
         return data.value.filter((item: PositionData) => {
             if (filters.考区 && item.考区 !== filters.考区) return false
             if (filters.学历要求 && item.学历要求 !== filters.学历要求) return false
             if (filters.所属大类 && item.所属大类 !== filters.所属大类) return false
+            if (filters.职位代码 && !item.职位代码.includes(filters.职位代码.trim())) return false
             if (filters.keyword) {
                 const kw = filters.keyword.toLowerCase()
                 const searchFields = [

@@ -288,6 +288,18 @@
                 :filter="filterOption"
               />
             </div>
+            <div class="filter-item">
+              <label>职位代码</label>
+              <NInput 
+                v-model:value="filters.positionCode" 
+                placeholder="输入职位代码（支持模糊匹配）"
+                clearable
+              >
+                <template #prefix>
+                  <span style="opacity: 0.5">�</span>
+                </template>
+              </NInput>
+            </div>
             <div class="filter-item search">
               <label>关键词搜索</label>
               <NInput 
@@ -621,6 +633,7 @@ const filters = reactive({
   area: null as string | null,
   education: null as string | null,
   category: null as string | null,
+  positionCode: '', // 职位代码筛选
   keyword: ''
 })
 
@@ -630,6 +643,7 @@ const filteredData = computed(() => {
     考区: filters.area || undefined,
     学历要求: filters.education || undefined,
     所属大类: filters.category || undefined,
+    职位代码: filters.positionCode || undefined,
     keyword: filters.keyword || undefined
   })
 })
@@ -652,6 +666,7 @@ function resetFilters() {
   filters.area = null
   filters.education = null
   filters.category = null
+  filters.positionCode = ''
   filters.keyword = ''
 }
 
